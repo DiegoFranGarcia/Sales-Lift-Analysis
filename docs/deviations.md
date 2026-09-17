@@ -110,3 +110,12 @@ placebo design, which requires 26 weeks of pre-period by construction.
 **Decision: threshold held at 26 weeks.** The power gain does not justify weakening
 the pre-trend evidence, and no change is warranted that would only have been
 considered because it increased the sample.
+
+---
+
+## 2026-09-17 — §9 heterogeneity by StoreType: type b not estimable
+
+The §8.2 selection check shows the primary sample contains only 1 treated store of
+`StoreType = b` (against 12 never-treated). The §9 split by store type will
+therefore be reported for types a, c and d only; type b is named as not estimable
+rather than reported with a meaningless interval. No change to the other §9 splits.
