@@ -119,3 +119,50 @@ The §8.2 selection check shows the primary sample contains only 1 treated store
 `StoreType = b` (against 12 never-treated). The §9 split by store type will
 therefore be reported for types a, c and d only; type b is named as not estimable
 rather than reported with a meaningless interval. No change to the other §9 splits.
+
+---
+
+## 2026-09-19 — §2 underpowered framing withdrawn on power-analysis evidence
+
+The 2026-09-15 entry took the conservative §2 branch (30–99 adopters → treat the
+estimate as underpowered, foreground the methods contrast). §10 now gives a
+corrected MDE of ~1.2%, well below plausible promotion effects.
+
+**Revised decision:** the ATT is reported as a primary result. The methods contrast
+(naive → TWFE → Goodman-Bacon → CS) remains a headline finding per §7, but no longer
+as a substitute for an effect estimate the design was assumed unable to support.
+
+This reverses a prior decision on evidence that did not exist when it was made.
+The §2 threshold is a headcount proxy for power; §10 measures power directly.
+
+---
+
+## 2026-09-22 — §1 Naive benchmarks
+
+Computed before any causal estimate. Both specifications omit store and week
+fixed effects deliberately. SEs clustered at store level.
+
+| Benchmark | Estimate | 95% CI |
+|---|---|---|
+| Cross-sectional (adopters vs never-adopters) | **−8.34%** | [−14.09%, −2.21%] |
+| Before/after (adopters, post vs pre) | **+2.45%** | [−2.28%, +7.41%] |
+
+Group means of log sales:
+
+| Group | Period | Mean | Store-weeks |
+|---|---|---|---|
+| Never-treated | — | 8.824 | 70,079 |
+| Adopters | Pre | 8.723 | 5,200 |
+| Adopters | Post | 8.747 | 8,125 |
+
+**Interpretation.** The cross-sectional benchmark says Promo2 *reduces* sales by
+8.3%, significant at conventional levels. This is almost certainly the wrong sign,
+and §8.2 explains why: adopters were ~12% smaller before adopting. The estimate is
+measuring selection into the program, not the program's effect.
+
+The before/after benchmark gives +2.45% but with a CI spanning zero. It is
+uncontaminated by selection (composition is held fixed) but absorbs all calendar-
+time variation — chain-wide growth and seasonality are attributed to the program.
+
+These are the reference points for the §7 contrast. The distance between −8.3% and
+whatever the Callaway–Sant'Anna estimate turns out to be is the project's headline.
