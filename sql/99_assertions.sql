@@ -2,6 +2,11 @@
 -- 99_assertions.sql
 -- Fails loudly if the constructed sample drifts from its specification.
 -- Run after every rebuild. Each block raises an exception on violation.
+--
+-- The hardcoded counts are the values derived and logged in deviations.md.
+-- If a change to the SQL moves them, that is caught here rather than
+-- discovered several steps later. A DELIBERATE change updates both this
+-- file and the log together.
 -- =====================================================================
 
 DO $$
@@ -15,27 +20,34 @@ BEGIN
         RAISE EXCEPTION 'Always-treated stores present in store_sample: %', n;
     END IF;
 
-    -- Primary sample composition (see deviations.md, 2026-09-14)
+    -- Primary sample composition (deviations.md, 2026-09-22)
     SELECT COUNT(*) INTO n
     FROM store_sample_primary WHERE treat_group = 'in_window';
-    IF n <> 99 THEN
-        RAISE EXCEPTION 'Treated store count is %, expected 99', n;
+    IF n <> 96 THEN
+        RAISE EXCEPTION 'Treated store count is %, expected 96', n;
     END IF;
 
     SELECT COUNT(*) INTO n
     FROM store_sample_primary WHERE treat_group = 'never_treated';
-    IF n <> 520 THEN
-        RAISE EXCEPTION 'Never-treated store count is %, expected 520', n;
+    IF n <> 514 THEN
+        RAISE EXCEPTION 'Never-treated store count is %, expected 514', n;
     END IF;
 
-    -- §6.4 — no gapped stores in the primary sample
+    -- §6.4a — no row-gapped stores in the primary sample
     SELECT COUNT(*) INTO n
     FROM store_sample_primary WHERE is_gapped;
     IF n > 0 THEN
         RAISE EXCEPTION 'Gapped stores in primary sample: %', n;
     END IF;
 
-    -- §6.5 — every treated store has ≥26 pre-adoption weeks
+    -- §6.4b — no store with a >= 4 week closure run in the primary sample
+    SELECT COUNT(*) INTO n
+    FROM store_sample_primary WHERE has_long_closure;
+    IF n > 0 THEN
+        RAISE EXCEPTION 'Long-closure stores in primary sample: %', n;
+    END IF;
+
+    -- §6.5 — every treated store has >= 26 pre-adoption weeks
     SELECT COUNT(*) INTO n
     FROM store_sample_primary
     WHERE treat_group = 'in_window' AND pre_weeks < 26;
@@ -73,7 +85,8 @@ BEGIN
         RAISE EXCEPTION 'Never-treated rows carry treatment timing: %', n;
     END IF;
 
-    -- §8.1 — every treated store has at least 8 observed pre-periods
+    -- §8.1 — every treated store has at least 8 OBSERVED pre-periods.
+    -- Distinct from §6.5's pre_weeks, which counts calendar weeks.
     SELECT COUNT(*) INTO n
     FROM (
         SELECT store

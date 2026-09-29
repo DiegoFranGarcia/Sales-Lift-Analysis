@@ -137,32 +137,44 @@ The §2 threshold is a headcount proxy for power; §10 measures power directly.
 
 ---
 
-## 2026-09-22 — §1 Naive benchmarks
+## 2026-09-29 — §6.4 implementation gap: closures encoded as open_days = 0
 
-Computed before any causal estimate. Both specifications omit store and week
-fixed effects deliberately. SEs clustered at store level.
+§6.4 specifies dropping stores with any gap of ≥4 consecutive weeks. The
+implementation detected gaps only as **missing rows** (`weeks_present = 110`).
+Rossmann encodes some extended closures differently: rows present with `Open = 0`
+every day. Those stores passed §6.4 and lost the affected weeks to §6.3 at the
+week level instead of being excluded.
 
-| Benchmark | Estimate | 95% CI |
+Found while investigating the unbalanced-panel warning from the Bacon
+decomposition.
+
+**Store 708 is the clear case:** 12 consecutive zero-open weeks from 2014-07-07 —
+the exact first week of the refurbishment block that removed 180 stores under
+§6.4 — at event time +10 to +21, inside its post-adoption period. A refurbishment
+store the row-based test missed.
+
+**Resolution.** §6.4 applied as written: any run of ≥4 consecutive weeks with no
+open days excludes the store, however the closure is encoded. New flag
+`has_long_closure`. The rule is unchanged; only its implementation is corrected.
+
+| | Before | After |
 |---|---|---|
-| Cross-sectional (adopters vs never-adopters) | **−8.34%** | [−14.09%, −2.21%] |
-| Before/after (adopters, post vs pre) | **+2.45%** | [−2.28%, +7.41%] |
+| Treated | 99 | **96** |
+| Never-treated | 520 | **514** |
 
-Group means of log sales:
+Treated stores dropped: 708 (12 weeks, refurbishment window), 674 (5 weeks, event
+time +81), 700 (4 weeks, event time −8).
 
-| Group | Period | Mean | Store-weeks |
-|---|---|---|---|
-| Never-treated | — | 8.824 | 70,079 |
-| Adopters | Pre | 8.723 | 5,200 |
-| Adopters | Post | 8.747 | 8,125 |
+**Considered and rejected:** restricting the fix to closures overlapping the
+refurbishment window would drop only 708 (99 → 98). Better targeted, but it is a
+distinction drawn after seeing which stores it affects. The literal application is
+taken instead; the narrower variant is retained as a §11 specification-curve branch.
 
-**Interpretation.** The cross-sectional benchmark says Promo2 *reduces* sales by
-8.3%, significant at conventional levels. This is almost certainly the wrong sign,
-and §8.2 explains why: adopters were ~12% smaller before adopting. The estimate is
-measuring selection into the program, not the program's effect.
+**Cost.** ~1.5% in standard error, immaterial against the §10 MDE. All prior
+estimates were re-run on 96/514.
 
-The before/after benchmark gives +2.45% but with a CI spanning zero. It is
-uncontaminated by selection (composition is held fixed) but absorbs all calendar-
-time variation — chain-wide growth and seasonality are attributed to the program.
-
-These are the reference points for the §7 contrast. The distance between −8.3% and
-whatever the Callaway–Sant'Anna estimate turns out to be is the project's headline.
+**Ambiguity noted.** §6.5 requires "≥26 weeks of pre-adoption data." `pre_weeks`
+counts calendar weeks from panel start, but §6.3 drops zero-open weeks, so a
+store's *observed* pre-period can be shorter — store 700 had 26 calendar, 22
+observed. Moot here since 700 is dropped. Calendar weeks retained; the §8.1
+assertion independently requires ≥8 observed pre-periods.
