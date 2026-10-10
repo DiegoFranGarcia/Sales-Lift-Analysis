@@ -1,0 +1,165 @@
+{
+  "sample": {
+    "treated": 96,
+    "control": 514,
+    "store_weeks": 82300,
+    "panel_start": "2012-12-31",
+    "panel_end": "2015-07-27",
+    "cohorts": 15
+  },
+  "estimates": {
+    "naive_cross_sectional": {
+      "att": -0.0840819736413534,
+      "se": 0.03330186790188784,
+      "ci_lo": -0.14935243534696402,
+      "ci_hi": -0.018811511935742778,
+      "p": 0.011575013020518036,
+      "label": "Naive: adopters vs never-adopters",
+      "note": "No controls. Measures who joined, not what joining did.",
+      "pct": -8.064410994385508,
+      "pct_lo": -13.873447900922997,
+      "pct_hi": -1.8635679727872834
+    },
+    "naive_before_after": {
+      "att": 0.016576878727992142,
+      "se": 0.02362812451288212,
+      "ci_lo": -0.02973339433948482,
+      "ci_hi": 0.06288715179546911,
+      "p": 0.48294484700418583,
+      "label": "Naive: adopters before vs after",
+      "note": "Absorbs all calendar-time variation.",
+      "pct": 1.6715037540383948,
+      "pct_lo": -2.929570568701656,
+      "pct_hi": 6.490665964587383
+    },
+    "twfe": {
+      "att": 0.0067110105837484115,
+      "se": 0.011807669724049997,
+      "ci_lo": -0.016431596816733583,
+      "ci_hi": 0.029853617984230404,
+      "p": 0.5697903488073386,
+      "label": "Two-way fixed effects",
+      "note": "Baseline is the full pre-period average.",
+      "pct": 0.6733579874611539,
+      "pct_lo": -1.62973345169386,
+      "pct_hi": 3.030370498127155
+    },
+    "cs_att": {
+      "att": 0.04280027818188556,
+      "se": 0.014540408025752325,
+      "ci_lo": 0.01412058205363618,
+      "ci_hi": 0.07053774830513788,
+      "p": 0.001,
+      "label": "Callaway-Sant'Anna (primary estimator)",
+      "note": "Baseline is the week before adoption.",
+      "pct": 4.372941849558587,
+      "pct_lo": 1.4220748386068571,
+      "pct_hi": 7.308507580906509
+    }
+  },
+  "diagnostics": {
+    "mde_empirical": {
+      "value": 0.0333844271173473,
+      "pct": 3.33844271173473,
+      "label": "Minimum detectable effect",
+      "note": "2.8 x the SD of 500 in-time placebo estimates. Supersedes the \u00a710 formula range of 0.23-1.19%."
+    },
+    "placebo_intime": {
+      "n": 500,
+      "mean": -0.00036591930830785925,
+      "sd": 0.011923009684766894,
+      "pct_975": 0.022706721030008016,
+      "n_exceeding_real": 0,
+      "label": "In-time placebo on never-adopters",
+      "note": "500 fake adoption assignments. Design does not manufacture effects."
+    },
+    "placebo_date": {
+      "att": -0.0321,
+      "p": 0.001,
+      "n_treated": 62,
+      "att_20wk": -0.0411,
+      "n_treated_20wk": 93,
+      "real_att_same_62": 0.0101,
+      "label": "Placebo adoption date",
+      "note": "FAILS. Fake adoption 26 weeks early yields a large negative effect."
+    },
+    "placebo_dose": {
+      "label": "Placebo adoption date, by shift length",
+      "note": "Fake adoption N weeks before the real one, panel truncated at real adoption. A null result is expected at every shift.",
+      "rows": [
+        {
+          "shift": 13,
+          "n_treated": 96,
+          "att": 0.0098
+        },
+        {
+          "shift": 20,
+          "n_treated": 93,
+          "att": -0.0411
+        },
+        {
+          "shift": 26,
+          "n_treated": 62,
+          "att": -0.0321
+        },
+        {
+          "shift": 39,
+          "n_treated": 50,
+          "att": -0.0534
+        }
+      ]
+    },
+    "honest_did": {
+      "breakdown_rm": 0.0342,
+      "breakdown_sd": 0.0049,
+      "label": "Honest DiD breakdown value",
+      "note": "Smallest parallel-trends violation at which the CI includes zero. Applied work treats values below 1 as fragile."
+    },
+    "leave_one_out": {
+      "worst_cohort": "2013-07-29",
+      "worst_cohort_n": 31,
+      "att_without": 0.016977926409693,
+      "att_without_pct": 1.7122870523909928,
+      "label": "Leave-one-cohort-out",
+      "note": "Dropping the largest cohort takes the estimate below the MDE."
+    },
+    "spec_curve": {
+      "n": 128,
+      "min": -0.0055270061843369,
+      "max": 0.0605758994764158,
+      "median": 0.0351531070501335,
+      "n_below_mde": 62,
+      "n_negative": 8,
+      "label": "Specification curve",
+      "note": "128 defensible specifications."
+    }
+  },
+  "distrust_conditions": [
+    {
+      "text": "Pre-trend coefficients trending in the direction of the estimate",
+      "status": "FIRED",
+      "evidence": "Treated stores converge downward toward controls pre-adoption."
+    },
+    {
+      "text": "Placebo treatment date producing an effect of similar magnitude",
+      "status": "FIRED",
+      "evidence": "-4.02% on 93 of 96 stores against +4.37% real."
+    },
+    {
+      "text": "Estimate flipping sign across reasonable specifications",
+      "status": "PARTIAL",
+      "evidence": "No sign flip, but 62 of 128 specifications fall below the MDE."
+    },
+    {
+      "text": "Goodman-Bacon showing nearly all weight on already-treated comparisons",
+      "status": "NOT FIRED",
+      "evidence": "94.6% clean weight."
+    },
+    {
+      "text": "Fewer than 30 in-window adopters",
+      "status": "NOT FIRED",
+      "evidence": "96 treated stores."
+    }
+  ],
+  "conclusion": "Three \u00a712 distrust conditions have fired. The estimate is not reported as a causal effect of Promo2: this data cannot separate the program's effect from mean reversion among stores that adopted during a decline."
+}

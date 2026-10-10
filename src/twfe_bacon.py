@@ -14,13 +14,19 @@ This script computes the TWFE estimate and then decomposes it (Goodman-Bacon
 2021) to show how much weight sits on clean versus contaminated comparisons.
 The decomposition, not the coefficient, is the point.
 """
+import os
+
 import numpy as np
 import pandas as pd
 import statsmodels.formula.api as smf
 from sqlalchemy import create_engine
+from sqlalchemy import create_engine
+from dotenv import load_dotenv
 
-engine = create_engine("postgresql://diegogarcia@localhost:5432/rossmann")
+if os.path.exists(".env"):
+    load_dotenv()
 
+engine = create_engine(os.getenv("DATABASE_URL"))
 df = pd.read_sql("""
     SELECT store, week_start, log_sales,
            ever_treated, post_treatment, adoption_week, cohort_quarter

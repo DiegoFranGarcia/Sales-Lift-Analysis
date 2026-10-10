@@ -178,3 +178,125 @@ counts calendar weeks from panel start, but §6.3 drops zero-open weeks, so a
 store's *observed* pre-period can be shorter — store 700 had 26 calendar, 22
 observed. Moot here since 700 is dropped. Calendar weeks retained; the §8.1
 assertion independently requires ≥8 observed pre-periods.
+
+---
+
+## 2026-09-30 — §4 cohort definition changed from quarterly to weekly for CS
+
+§4 specifies cohorts as adoption year-quarter, "because weekly cohorts will be too
+thin to estimate group-time effects." Callaway–Sant'Anna requires `first_treat` on
+the same time grid as `time`, so with a weekly panel, quarterly cohorts mean coding
+each store's adoption at the start of its quarter.
+
+The primary sample has **15 distinct adoption weeks** across 96 treated stores —
+fewer than §4 anticipated. Quarterly grouping yields 7 cohorts but dates the
+2013Q3 cohort (45 stores) at 2013-07-01, while its members actually adopted between
+2013-07-01 and 2013-09-30. Stores would be coded treated up to 13 weeks early,
+labelling genuinely pre-treatment weeks as post-treatment and biasing the estimate
+toward zero.
+
+**Decision: weekly `first_treat`.** Timing error is a directional bias; thin
+cohorts are a precision cost that size-weighted aggregation already handles. The
+nine groups with ≤3 stores carry negligible weight in the overall ATT and will be
+reported with their intervals rather than suppressed.
+
+Quarterly cohorts are retained as a §11 specification-curve branch.
+
+---
+
+## 2026-09-30 — Weekly cohorts: per-cohort effects not reportable after all
+
+The entry above stated that thin weekly cohorts "will be reported with their
+intervals rather than suppressed." That is not possible. All 15 cohorts returned
+non-finite multiplier-bootstrap standard errors; five contain a single store, and
+the analytical influence-function SEs give t-statistics of 29 and 54 on those
+cells, which are numerical artifacts rather than estimates.
+
+**Revised:** the overall ATT is reported; cohort-level effects are named as not
+estimable. §9 heterogeneity by `PromoInterval` and the other pre-specified splits
+are unaffected, as those group stores by attribute rather than adoption week.
+
+---
+
+## 2026-10-01 — Honest DiD event window restricted to −26..+26
+
+Rambachan–Roth sensitivity analysis requires an event-study surface. The full
+surface spans −126 to +108. The relative-magnitude restriction benchmarks against
+the largest pre-period first difference, and the largest movements in this surface
+sit at horizons −126 to −100, which rest on 1–4 of 15 cohorts and are
+predominantly noise. Including them would inflate the benchmark and make the
+result appear robust for the wrong reason.
+
+**Decision: restrict to −26..+26 for the Honest DiD fit only.** This covers the
+window where §8.3 detected drift, retains all 96 treated stores and all 15
+cohorts, and provides a year of post-treatment horizons. The ATT on this window
+is +4.59% against +4.37% on the full window, so the restriction does not
+materially change the estimand.
+
+The primary CS estimate continues to use the full window.
+
+---
+
+## 2026-10-01 — Honest DiD fitted without bootstrap (upstream bug)
+
+`diff-diff` issue #836: with `n_bootstrap > 0`, `CallawaySantAnna` clears
+`event_study_vcov`, both at fit time and in the post-fit `aggregate("event_study")`
+replay. Honest DiD then loses the cross-horizon covariance. In the reported
+reproducer — parallel trends holding, effect path known — the Δ^SD(M = 0) interval
+covered the truth 68% of the time at a nominal 95%.
+
+The Honest DiD fit therefore uses `n_bootstrap=0` and analytical standard errors.
+This does not affect the primary CS estimate, which continues to use 999
+multiplier replications for its own inference.
+
+Aggregation is requested at fit time rather than post-fit, since the sensitivity
+analyses read the fit-time surface. This triggers a deprecation warning that is
+unavoidable in the current version.
+
+---
+
+## 2026-10-02 — §8 placebo tests run out of listed order
+
+§8 lists the in-time placebo on never-adopters as item 5. It was run first,
+before §8.3 (placebo treatment date) and §8.4 (placebo outcome).
+
+Reason: §8.5 is the test that could invalidate the others. If the design produced
+sizeable effects on randomly assigned fake adoption dates, the remaining placebos
+would be answering a question that no longer mattered. It also bore directly on
+the concern raised by the CS/TWFE reconciliation — whether anchoring on week g−1
+systematically generates positive estimates.
+
+Sequencing only; no change to the content of any test. §8.4 and the §12
+leave-one-out check remain outstanding.
+
+---
+
+## 2026-10-04 — §12 invoked: ATT withdrawn as a causal estimate
+
+Three §12 distrust conditions have fired (findings.md, 2026-10-04). Per §12's
+pre-committed instruction, the conclusion is that this data cannot cleanly
+identify the effect of Promo2.
+
+**Reporting decision:** the CS estimate of +4.37% is no longer presented as the
+headline causal effect. It is reported together with the diagnostics that
+undermine it — the §8.3 placebo, the Honest DiD breakdown value, and the
+sample-composition result showing the estimate falls to +1.01% on 62 of 96 stores.
+
+This supersedes the 2026-09-19 decision to report the ATT as a primary result.
+That decision was made on power-analysis evidence; it is reversed on
+identification evidence, which is the binding constraint.
+
+Remaining plan steps are unaffected in content: §8.4, §9, §11 and the §12
+leave-one-out still run, now as characterisation of a null rather than
+robustness checks on a positive finding.
+
+---
+
+## 2026-10-06 — §11 specification curve rebuilt after a coding error
+
+The first implementation remapped `first_treat` to the adoption quarter while
+leaving the panel at weekly grain, coding stores as treated up to 12 weeks
+early. It produced estimates up to +55%. Rebuilt with a genuinely quarterly
+panel, partial quarters dropped, and `pre_min` measured in observed rather than
+calendar weeks. Corrected curve spans −0.55% to +6.24%.
+
